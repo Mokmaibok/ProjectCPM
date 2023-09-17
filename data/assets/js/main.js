@@ -8,6 +8,8 @@ let isButtonResetPressed = false
 let isButton30Pressed = false
 let isButton45Pressed = false
 let isButton60Pressed = false
+let isButtonFixPositionPressed = false
+let isButtonUnFixPositionPressed = false
 
 function updateDegree(name) {
     const url = apiUrlGet + name
@@ -23,7 +25,7 @@ function updateDegree(name) {
 }
 
 setInterval(() => {
-    updateDegree("Angle1");
+    updateDegree("Angle");
 }, 1000);
 
 function sendCommand(name, nubmer) {
@@ -103,5 +105,17 @@ function Button60Released () {
     if (isButton60Pressed) {
         sendCommand("Button60", "0")
         isButton60Pressed = false
+    }
+}
+
+function ButtonFixPosition () {
+    isButtonFixPositionPressed = true
+    sendCommand("FixPosition", "1")
+}
+
+function ButtonFixPositionReleased () {
+    if (isButtonFixPositionPressed) {
+        sendCommand("FixPosition", "0")
+        isButtonFixPositionPressed = false
     }
 }

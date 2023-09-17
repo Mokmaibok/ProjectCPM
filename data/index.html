@@ -10,7 +10,7 @@
 <body>
     <div class="container">
         <div style="margin-top: 20px; text-align: center;">
-            <h2>Degree Angle: <span id="Angle1">-</span> Degree</h2><br>
+            <h2>Degree Angle: <span id="Angle">-</span> Degree</h2><br>
         </div>
 
         <!-- #Button Control -->
@@ -36,6 +36,13 @@
             </div>
             <div class="col-4">
                 <button class="btn btn-primary btn-block" style="width: 100%;" onmousedown="Button60()" onmouseup="Button60Released()">Position 60 Degree</button>
+            </div>
+        </div>
+
+        <!-- #Button Setting -->
+        <div class="row" style="margin-bottom: 10px;">
+            <div class="col-12">
+                <button class="btn btn-warning btn-block" style="width: 100%;" onmousedown="ButtonFixPosition()" onmouseup="ButtonFixPositionReleased()">Fix angle</button>
             </div>
         </div>
     </div>
