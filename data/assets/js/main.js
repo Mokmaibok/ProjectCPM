@@ -10,6 +10,8 @@ let isButton45Pressed = false
 let isButton60Pressed = false
 let isButtonFixPositionPressed = false
 let isButtonUnFixPositionPressed = false
+let isButtonAutoPressed = false
+let isButtonAutoStopPressed = false
 
 function updateDegree(name) {
     const url = apiUrlGet + name
@@ -117,5 +119,17 @@ function ButtonFixPositionReleased () {
     if (isButtonFixPositionPressed) {
         sendCommand("FixPosition", "0")
         isButtonFixPositionPressed = false
+    }
+}
+
+function ButtonAuto () {
+    isButtonAutoPressed = true
+    sendCommand("ButtonAuto", "1")
+}
+
+function ButtonAutoReleased () {
+    if (isButtonAutoPressed) {
+        sendCommand("ButtonAuto", "0")
+        isButtonAutoPressed = false
     }
 }

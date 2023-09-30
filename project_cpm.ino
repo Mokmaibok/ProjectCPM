@@ -28,8 +28,10 @@ bool isButton60Pressed = false;
 bool isLimitSwitchForwardPressed = false;
 bool isLimitSwitchReversePressed = false;
 bool isButtonfixPosition = false;
+bool isAutoButtonPressed = false;
 
 float initialAngle = 0.0;
+int counter = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -49,9 +51,36 @@ void setup() {
 void loop() {
   server.handleClient();
   anto.mqtt.loop();
-  updateDegreeAngle();
+  updatePublicAnto();
   controlMotors();
-  checkLimitSwitches();
+  
+  if (isAutoButtonPressed) {
+    isLimitSwitchForwardPressed = !digitalRead(LimitSwitchForward);
+    isLimitSwitchReversePressed = !digitalRead(LimitSwitchReverse);
+    if (isLimitSwitchForwardPressed) {
+      stopMotor(); 
+      delay(100);
+      isStartButtonPressed = true;
+      if (counter > 3) {
+        isAutoButtonPressed = false;
+        stopMotor();
+        delay(500); 
+        moveForward();
+        delay(500); 
+        stopMotor();
+        delay(500); 
+      }
+    }
+    
+    if (isLimitSwitchReversePressed) {
+      stopMotor();
+      delay(100);
+      isResetButtonPressed = true;
+    }
+  } else {
+    counter = 0;
+    checkLimitSwitches();
+  }
 }
 
 void controlMotors() {
@@ -99,14 +128,14 @@ void moveReverse() {
 }
 
 void stopMotor() {
+  digitalWrite(MotorForward, LOW);
+  digitalWrite(MotorReverse, LOW);
   isStartButtonPressed = false;
   isStopButtonPressed = false;
   isResetButtonPressed = false;
   isButton30Pressed = false;
   isButton45Pressed = false;
   isButton60Pressed = false;
-  digitalWrite(MotorForward, LOW);
-  digitalWrite(MotorReverse, LOW);
 }
 
 float getAngle() {
@@ -129,6 +158,7 @@ void setupAnto() {
   anto.sub("Button45");
   anto.sub("Button60");
   anto.sub("FixPosition");
+  anto.sub("ButtonAuto");
 }
 
 void messageReceived(String thing, String channel, String payload) {
@@ -146,6 +176,7 @@ void messageReceived(String thing, String channel, String payload) {
     } else if (channel == "ButtonStop") {
       if (payload == "1") {
         isStopButtonPressed = true;
+        isAutoButtonPressed = false;
       }
     } else if (channel == "ButtonReset") {
       if (payload == "1") {
@@ -167,13 +198,19 @@ void messageReceived(String thing, String channel, String payload) {
       if (payload == "1") {
         isButtonfixPosition = true;
       }
+    } else if (channel == "ButtonAuto") {
+      if (payload == "1") {
+        isAutoButtonPressed = true;
+        isStartButtonPressed = true;
+      }
     }
   }
 }
 
-void updateDegreeAngle() {
+void updatePublicAnto() {
   float angle = getAngle() - initialAngle;
   anto.pub("Angle", angle);
+  anto.pub("Counter", counter);
 }
 
 void setupRoutes() {
