@@ -16,6 +16,7 @@ MPU6050 mpu;
 
 #define MotorForward 13
 #define MotorReverse 15
+#define SpeedMotor 0
 #define LimitSwitchForward 14
 #define LimitSwitchReverse 12
 
@@ -29,14 +30,19 @@ bool isLimitSwitchForwardPressed = false;
 bool isLimitSwitchReversePressed = false;
 bool isButtonfixPosition = false;
 bool isAutoButtonPressed = false;
+bool wasLimitSwitchForwardPressed = false;
 
 float initialAngle = 0.0;
 int counter = 0;
+int target = 3;
+int pwmspeedmotor = 255;
+String statusmode = "Manual";
 
 void setup() {
   Serial.begin(115200);
   pinMode(MotorForward, OUTPUT);
   pinMode(MotorReverse, OUTPUT);
+  pinMode(SpeedMotor, OUTPUT);
   pinMode(LimitSwitchForward, INPUT_PULLUP);
   pinMode(LimitSwitchReverse, INPUT_PULLUP);
   setupAnto();
@@ -52,48 +58,72 @@ void loop() {
   server.handleClient();
   anto.mqtt.loop();
   updatePublicAnto();
-  controlMotors();
   
   if (isAutoButtonPressed) {
-    isLimitSwitchForwardPressed = !digitalRead(LimitSwitchForward);
-    isLimitSwitchReversePressed = !digitalRead(LimitSwitchReverse);
-    if (isLimitSwitchForwardPressed) {
-      stopMotor(); 
-      delay(100);
+    statusmode = "Auto";
+    float angle = getAngle() - initialAngle;
+  
+    if (isButtonfixPosition) {
+      initialAngle = getAngle();
+      isButtonfixPosition = false;
+    }
+    
+    if (isStartButtonPressed) moveForward();
+    if (isStopButtonPressed) stopMotor();
+    if (isResetButtonPressed) moveReverse();
+
+    if (isButton30Pressed || isButton45Pressed || isButton60Pressed) {
       isStartButtonPressed = true;
-      if (counter > 3) {
-        isAutoButtonPressed = false;
-        stopMotor();
-        delay(500); 
-        moveForward();
-        delay(500); 
-        stopMotor();
-        delay(500); 
+      
+      if ((isButton30Pressed && angle >= 30) || (isButton45Pressed && angle >= 45) || (isButton60Pressed && angle >= 60)) {
+        isStartButtonPressed = false;
+        isResetButtonPressed = true;
       }
     }
     
+    isLimitSwitchForwardPressed = !digitalRead(LimitSwitchForward);
+    isLimitSwitchReversePressed = !digitalRead(LimitSwitchReverse);
+    
     if (isLimitSwitchReversePressed) {
-      stopMotor();
-      delay(100);
+      isStartButtonPressed = false;
       isResetButtonPressed = true;
     }
+
+    if (isLimitSwitchForwardPressed && !wasLimitSwitchForwardPressed) {
+      isStartButtonPressed = true;
+      isResetButtonPressed = false;
+      counter++;
+    }
+    
+    if (counter > target) {
+      isStopButtonPressed = true;
+      checkLimitSwitches();
+      counter = 0;
+      wasLimitSwitchForwardPressed = false;
+    }
+    
+    wasLimitSwitchForwardPressed = isLimitSwitchForwardPressed;
+    
   } else {
-    counter = 0;
+    manualMode();
     checkLimitSwitches();
+    counter = 0;
+    wasLimitSwitchForwardPressed = false;
   }
 }
 
-void controlMotors() {
-  if (isStartButtonPressed) moveForward();
-  if (isStopButtonPressed) stopMotor();
-  if (isResetButtonPressed) moveReverse();
+void manualMode() {
+  statusmode = "Manual";
+  float angle = getAngle() - initialAngle;
 
   if (isButtonfixPosition) {
     initialAngle = getAngle();
     isButtonfixPosition = false;
   }
-
-  float angle = getAngle() - initialAngle;
+  
+  if (isStartButtonPressed) moveForward();
+  if (isStopButtonPressed) stopMotor();
+  if (isResetButtonPressed) moveReverse();
 
   if (isButton30Pressed || isButton45Pressed || isButton60Pressed) {
     moveForward();
@@ -113,16 +143,17 @@ void checkLimitSwitches() {
     else moveReverse();
     delay(500);
     stopMotor();
-    delay(500);
   }
 }
 
 void moveForward() {
+  analogWrite(SpeedMotor, pwmspeedmotor);
   digitalWrite(MotorForward, HIGH);
   digitalWrite(MotorReverse, LOW);
 }
 
 void moveReverse() {
+  analogWrite(SpeedMotor, pwmspeedmotor);
   digitalWrite(MotorForward, LOW);
   digitalWrite(MotorReverse, HIGH);
 }
@@ -176,7 +207,6 @@ void messageReceived(String thing, String channel, String payload) {
     } else if (channel == "ButtonStop") {
       if (payload == "1") {
         isStopButtonPressed = true;
-        isAutoButtonPressed = false;
       }
     } else if (channel == "ButtonReset") {
       if (payload == "1") {
@@ -201,7 +231,8 @@ void messageReceived(String thing, String channel, String payload) {
     } else if (channel == "ButtonAuto") {
       if (payload == "1") {
         isAutoButtonPressed = true;
-        isStartButtonPressed = true;
+      } else if (payload == "0") {
+        isAutoButtonPressed = false;
       }
     }
   }
@@ -209,8 +240,31 @@ void messageReceived(String thing, String channel, String payload) {
 
 void updatePublicAnto() {
   float angle = getAngle() - initialAngle;
+  
   anto.pub("Angle", angle);
   anto.pub("Counter", counter);
+  anto.pub("Target", target);
+  anto.pub("StatusMode", statusmode);
+}
+
+// ฟังก์ชันสำหรับอัพเดต Target
+void handleupdateTarget() {
+  if (server.hasArg("target")) {
+      target = server.arg("target").toInt();
+      server.send(200, "text/plain", "Target updated");
+  } else {
+      server.send(400, "text/plain", "Bad Request");
+  }
+}
+
+// ฟังก์ชันสำหรับอัพเดต PWM Speed Motor
+void handleupdatePWM() {
+  if (server.hasArg("pwm")) {
+      pwmspeedmotor = server.arg("pwm").toInt();
+      server.send(200, "text/plain", "PWM value updated");
+  } else {
+      server.send(400, "text/plain", "Bad Request");
+  }
 }
 
 void setupRoutes() {
@@ -218,6 +272,9 @@ void setupRoutes() {
   server.on("/index.html", HTTP_GET, handleRoot);
   server.on("/assets/css/style.css", HTTP_GET, []() { handleFile("/assets/css/style.css"); });
   server.on("/assets/js/main.js", HTTP_GET, []() { handleFile("/assets/js/main.js"); });
+  server.on("/updateTarget", HTTP_POST, handleupdateTarget);
+  server.on("/updatePWM", HTTP_POST, handleupdatePWM);
+
 }
 
 void handleRoot() {

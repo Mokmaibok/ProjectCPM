@@ -10,8 +10,10 @@ let isButton45Pressed = false
 let isButton60Pressed = false
 let isButtonFixPositionPressed = false
 let isButtonUnFixPositionPressed = false
-let isButtonAutoPressed = false
-let isButtonAutoStopPressed = false
+let isAutoButtonPressed = false
+let isAutoButton30Pressed = false
+let isAutoButton45Pressed = false
+let isAutoButton60Pressed = false
 
 function updateDegree(name) {
     const url = apiUrlGet + name
@@ -28,6 +30,10 @@ function updateDegree(name) {
 
 setInterval(() => {
     updateDegree("Angle");
+    updateDegree("Counter");
+    updateDegree("Target");
+    updateDegree("PercentSpeed");
+    updateDegree("StatusMode");
 }, 1000);
 
 function sendCommand(name, nubmer) {
@@ -122,14 +128,87 @@ function ButtonFixPositionReleased () {
     }
 }
 
+function ButtonManual () {
+    isAutoButtonPressed = true
+    sendCommand("ButtonAuto", "0")
+}
+
 function ButtonAuto () {
-    isButtonAutoPressed = true
+    isAutoButtonPressed = true
     sendCommand("ButtonAuto", "1")
 }
 
-function ButtonAutoReleased () {
-    if (isButtonAutoPressed) {
-        sendCommand("ButtonAuto", "0")
-        isButtonAutoPressed = false
+
+
+document.getElementById('TargetForm').addEventListener('submit', function (e) {
+    e.preventDefault(); // ป้องกันการรีโหลดหน้า
+
+    // รับค่าจาก input
+    var targetValue = document.getElementById('targetInput').value;
+
+    // ส่งค่าไปยัง ESP8266 ผ่าน fetch
+    fetch('/updateTarget', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'target=' + targetValue
+    })
+    .then(function (response) {
+        if (response.status === 200) {
+            // การส่งสำเร็จ
+            console.log('Target updated successfully.');
+        } else {
+            console.error('Failed to update target.');
+        }
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+    });
+});
+
+document.getElementById('PWMForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    var pwmValue = document.getElementById('pwmSlider').value;
+    var pwmPercentage = (pwmValue / 255) * 100;
+
+    // แสดงค่า PWM เป็นเปอร์เซ็นต์
+    document.getElementById('pwmValue').textContent = pwmPercentage.toFixed(2);
+
+    // บันทึกค่า PWM ลงใน localStorage
+    localStorage.setItem('pwmValue', pwmValue);
+
+    // ส่งค่า PWM ไปยัง ESP8266 ผ่าน fetch
+    fetch('/updatePWM', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'pwm=' + pwmValue
+    })
+    .then(function (response) {
+        if (response.status === 200) {
+            console.log('PWM value updated successfully.');
+        } else {
+            console.error('Failed to update PWM value.');
+        }
+    })
+    .catch(function (error) {
+        console.error('Error:', error);
+    });
+});
+
+// เมื่อหน้าเว็บโหลดเสร็จแล้ว
+document.addEventListener('DOMContentLoaded', function () {
+    // ตรวจสอบว่ามีค่า PWM ที่ถูกบันทึกใน localStorage หรือไม่
+    var storedPwmValue = localStorage.getItem('pwmValue');
+    if (storedPwmValue !== null) {
+        // แสดงค่า PWM เป็นเปอร์เซ็นต์
+        var pwmPercentage = (storedPwmValue / 255) * 100;
+        document.getElementById('pwmValue').textContent = pwmPercentage.toFixed(2);
+
+        // อัพเดตค่า Slider ให้ตรงกับค่าที่ถูกบันทึก
+        document.getElementById('pwmSlider').value = storedPwmValue;
     }
-}
+});
