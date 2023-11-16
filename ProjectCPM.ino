@@ -1,5 +1,3 @@
-#include <ESP8266WebServer.h>
-#include <LittleFS.h>
 #include <AntoIO.h>
 #include <Wire.h>
 #include <MPU6050.h>
@@ -11,7 +9,6 @@ const char *token = "OnC9FwGsaEGSQVfoF28IH12607bJ5slL5hlIPCgX";
 const char *thing = "Project_CPM";
 
 AntoIO anto(user, token, thing);
-ESP8266WebServer server(80);
 MPU6050 mpu;
 
 #define MotorForward 13
@@ -46,16 +43,12 @@ void setup() {
   pinMode(LimitSwitchForward, INPUT_PULLUP);
   pinMode(LimitSwitchReverse, INPUT_PULLUP);
   setupAnto();
-  LittleFS.begin();
-  server.begin();
   Wire.begin();
   mpu.initialize();
-  setupRoutes();
   initialAngle = getAngle();
 }
 
 void loop() {
-  server.handleClient();
   anto.mqtt.loop();
   updatePublicAnto();
   
@@ -127,6 +120,7 @@ void manualMode() {
 
   if (isButton30Pressed || isButton45Pressed || isButton60Pressed) {
     moveForward();
+    
     if ((isButton30Pressed && angle >= 30) || (isButton45Pressed && angle >= 45) || (isButton60Pressed && angle >= 60))
       stopMotor();
   }
@@ -234,6 +228,10 @@ void messageReceived(String thing, String channel, String payload) {
       } else if (payload == "0") {
         isAutoButtonPressed = false;
       }
+    } else if (channel == "Target") {
+      target = payload.toInt();
+    } else if (channel == "PercentSpeed") {
+      pwmspeedmotor = payload.toInt();
     }
   }
 }
@@ -243,64 +241,7 @@ void updatePublicAnto() {
   
   anto.pub("Angle", angle);
   anto.pub("Counter", counter);
-  anto.pub("Target", target);
+  anto.sub("Target", target);
+  anto.pub("PercentSpeed", pwmspeedmotor);
   anto.pub("StatusMode", statusmode);
-}
-
-// ฟังก์ชันสำหรับอัพเดต Target
-void handleupdateTarget() {
-  if (server.hasArg("target")) {
-      target = server.arg("target").toInt();
-      server.send(200, "text/plain", "Target updated");
-  } else {
-      server.send(400, "text/plain", "Bad Request");
-  }
-}
-
-// ฟังก์ชันสำหรับอัพเดต PWM Speed Motor
-void handleupdatePWM() {
-  if (server.hasArg("pwm")) {
-      pwmspeedmotor = server.arg("pwm").toInt();
-      server.send(200, "text/plain", "PWM value updated");
-  } else {
-      server.send(400, "text/plain", "Bad Request");
-  }
-}
-
-void setupRoutes() {
-  server.on("/", HTTP_GET, handleRoot);
-  server.on("/index.html", HTTP_GET, handleRoot);
-  server.on("/assets/css/style.css", HTTP_GET, []() { handleFile("/assets/css/style.css"); });
-  server.on("/assets/js/main.js", HTTP_GET, []() { handleFile("/assets/js/main.js"); });
-  server.on("/updateTarget", HTTP_POST, handleupdateTarget);
-  server.on("/updatePWM", HTTP_POST, handleupdatePWM);
-
-}
-
-void handleRoot() {
-  handleFile("/index.html");
-}
-
-String getContentType(const String &fileName) {
-  if (fileName.endsWith(".html")) return "text/html";
-  if (fileName.endsWith(".css")) return "text/css";
-  if (fileName.endsWith(".js")) return "application/javascript";
-  if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) return "image/jpeg";
-  if (fileName.endsWith(".png")) return "image/png";
-  if (fileName.endsWith(".gif")) return "image/gif";
-  if (fileName.endsWith(".ico")) return "image/x-icon";
-  if (fileName.endsWith(".xml")) return "text/xml";
-  if (fileName.endsWith(".pdf")) return "application/pdf";
-  if (fileName.endsWith(".zip")) return "application/zip";
-  return "text/plain";
-}
-
-void handleFile(const String& fileName) {
-  File file = LittleFS.open(fileName, "r");
-  if (!file) {
-    server.send(404, "text/plain", "File not found");
-    return;
-  }
-  server.streamFile(file, getContentType(fileName));
-  file.close();
 }

@@ -14,6 +14,7 @@ let isAutoButtonPressed = false
 let isAutoButton30Pressed = false
 let isAutoButton45Pressed = false
 let isAutoButton60Pressed = false
+let isButtonUpdateTargetPressed = false
 
 function updateDegree(name) {
     const url = apiUrlGet + name
@@ -34,7 +35,7 @@ setInterval(() => {
     updateDegree("Target");
     updateDegree("PercentSpeed");
     updateDegree("StatusMode");
-}, 1000);
+}, 100);
 
 function sendCommand(name, nubmer) {
     const url = apiUrlSet + name + "/" + nubmer
@@ -129,46 +130,39 @@ function ButtonFixPositionReleased () {
 }
 
 function ButtonManual () {
-    isAutoButtonPressed = true
     sendCommand("ButtonAuto", "0")
 }
 
 function ButtonAuto () {
-    isAutoButtonPressed = true
     sendCommand("ButtonAuto", "1")
 }
 
-
-
-document.getElementById('TargetForm').addEventListener('submit', function (e) {
-    e.preventDefault(); // ป้องกันการรีโหลดหน้า
-
-    // รับค่าจาก input
-    var targetValue = document.getElementById('targetInput').value;
-
-    // ส่งค่าไปยัง ESP8266 ผ่าน fetch
-    fetch('/updateTarget', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: 'target=' + targetValue
-    })
-    .then(function (response) {
-        if (response.status === 200) {
-            // การส่งสำเร็จ
-            console.log('Target updated successfully.');
-        } else {
-            console.error('Failed to update target.');
-        }
-    })
-    .catch(function (error) {
-        console.error('Error:', error);
-    });
+// คำสั่งสำหรับการรับค่าจาก TargetForm และส่งไปยัง API
+document.getElementById('TargetForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // ป้องกันการโหลดหน้าใหม่เมื่อส่งฟอร์ม
+    
+    const targetValue = document.getElementById('targetInput').value; // รับค่าจาก input ของ TargetForm
+    
+    // ตรวจสอบว่าค่าที่รับมาไม่ใช่ค่าว่าง และเป็นตัวเลข
+    if (targetValue !== '' && !isNaN(targetValue)) {
+        const apiUrlTargetSet = apiUrlSet + "Target/" + targetValue; // URL สำหรับการส่งค่าไปยัง API
+        
+        fetch(apiUrlTargetSet)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Target updated:', data); // พิมพ์ผลลัพธ์ที่ได้ใน console เมื่อสำเร็จ
+                // สามารถเพิ่มการแสดงผลหรือการปรับปรุง UI ต่อจากนี้ได้ตามต้องการ
+            })
+            .catch(error => console.error('Error updating Target:', error)); // พิมพ์ข้อผิดพลาดที่เกิดขึ้นในกรณีที่ไม่สามารถส่งค่าไปยัง API ได้
+    } else {
+        console.error('Invalid input for Target!'); // กรณีที่ค่าที่รับมาไม่ถูกต้อง
+    }
 });
 
-document.getElementById('PWMForm').addEventListener('submit', function (e) {
-    e.preventDefault();
+// คำสั่งสำหรับการรับค่าจาก PWMForm และส่งไปยัง API
+document.getElementById('PWMForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // ป้องกันการโหลดหน้าใหม่เมื่อส่งฟอร์ม
+    
 
     var pwmValue = document.getElementById('pwmSlider').value;
     var pwmPercentage = (pwmValue / 255) * 100;
@@ -178,25 +172,21 @@ document.getElementById('PWMForm').addEventListener('submit', function (e) {
 
     // บันทึกค่า PWM ลงใน localStorage
     localStorage.setItem('pwmValue', pwmValue);
-
-    // ส่งค่า PWM ไปยัง ESP8266 ผ่าน fetch
-    fetch('/updatePWM', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: 'pwm=' + pwmValue
-    })
-    .then(function (response) {
-        if (response.status === 200) {
-            console.log('PWM value updated successfully.');
-        } else {
-            console.error('Failed to update PWM value.');
-        }
-    })
-    .catch(function (error) {
-        console.error('Error:', error);
-    });
+    
+    // ตรวจสอบว่าค่าที่รับมาไม่ใช่ค่าว่าง และเป็นตัวเลข
+    if (pwmValue !== '' && !isNaN(pwmValue)) {
+        const apiUrlPWMSet = apiUrlSet + "PercentSpeed/" + pwmValue; // URL สำหรับการส่งค่าไปยัง API
+        
+        fetch(apiUrlPWMSet)
+            .then(response => response.json())
+            .then(data => {
+                console.log('PWM updated:', data); // พิมพ์ผลลัพธ์ที่ได้ใน console เมื่อสำเร็จ
+                // สามารถเพิ่มการแสดงผลหรือการปรับปรุง UI ต่อจากนี้ได้ตามต้องการ
+            })
+            .catch(error => console.error('Error updating PWM:', error)); // พิมพ์ข้อผิดพลาดที่เกิดขึ้นในกรณีที่ไม่สามารถส่งค่าไปยัง API ได้
+    } else {
+        console.error('Invalid input for PWM!'); // กรณีที่ค่าที่รับมาไม่ถูกต้อง
+    }
 });
 
 // เมื่อหน้าเว็บโหลดเสร็จแล้ว
