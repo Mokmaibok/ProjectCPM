@@ -15,7 +15,6 @@ let isAutoButton30Pressed = false
 let isAutoButton45Pressed = false
 let isAutoButton60Pressed = false
 let isButtonUpdateTargetPressed = false
-let isButtonManualandAutoPressed = false
 
 function updateDegree(name) {
     const url = apiUrlGet + name
@@ -132,20 +131,25 @@ function ButtonFixPositionReleased () {
 
 function ButtonManual () {
     sendCommand("ButtonAuto", "0")
-    isButtonManualandAutoPressed = false
 }
 
 function ButtonAuto () {
     sendCommand("ButtonAuto", "1")
-    isButtonManualandAutoPressed = true
 }
 
 function StatusMode() {
-    if (isButtonManualandAutoPressed) {
-        document.getElementById('StatusMode').textContent = "Auto"
-    } else {
-        document.getElementById('StatusMode').textContent = "Manual"
-    }
+    const url = apiUrlGet + "ButtonAuto"
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            const element = document.getElementById("StatusMode")
+            if (data.value == 1) {
+                element.textContent = "Auto"
+            } else if (data.value == 0){
+                element.textContent = "Manual"
+            }
+        })
+        .catch(error => console.error('Error:', error))
 }
 
 // คำสั่งสำหรับการรับค่าจาก TargetForm และส่งไปยัง API

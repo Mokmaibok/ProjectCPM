@@ -9,6 +9,9 @@
 </head>
 <body>
     <div class="container">
+        <div class="row" style="text-align: center; padding-top: 20px;">
+            <h1>Project CPM - IOT</h1>
+        </div>
         <div class="row">
             <div class="col-sm-4">
                 <div class="card" style="margin-top: 20px;">
@@ -27,17 +30,17 @@
                         <!-- #Button Auto -->
                         <div class="row" style="margin-bottom: 10px;">
                             <div class="col-6">
-                                <button class="btn btn-primary btn-block" style="width: 100%;" onclick="ButtonManual()">Manual</button>
+                                <button class="btn btn-primary btn-block" style="width: 100%; height: 100px;" onclick="ButtonManual()">Manual</button>
                             </div>
                             <div class="col-6">
-                                <button class="btn btn-primary btn-block" style="width: 100%;" onclick="ButtonAuto()">Auto</button>
+                                <button class="btn btn-primary btn-block" style="width: 100%; height: 100px;" onclick="ButtonAuto()">Auto</button>
                             </div>
                         </div>
         
                         <!-- #Button Setting -->
                         <div class="row" style="margin-bottom: 10px;">
                             <div class="col-12">
-                                <button class="btn btn-warning btn-block" style="width: 100%;" onmousedown="ButtonFixPosition()" onmouseup="ButtonFixPositionReleased()">Fix angle</button>
+                                <button class="btn btn-warning btn-block" style="width: 100%; height: 100px;" onmousedown="ButtonFixPosition()" onmouseup="ButtonFixPositionReleased()">Fix angle</button>
                             </div>
                         </div>   
     
@@ -48,7 +51,7 @@
                                     <label for="pwmSlider">PWM Value:</label>
                                     <input type="range" class="form-control-range" id="pwmSlider" min="0" max="255" style="width: 100%;">
                                 </div>
-                                <button type="submit" class="btn btn-primary" style="margin-top: 10px; width: 100%;">Update PWM Value</button>
+                                <button type="submit" class="btn btn-primary" style="margin-top: 10px; width: 100%; height: 100px;">Update PWM Value</button>
                             </form>
                         </div>     
                     
@@ -59,7 +62,7 @@
                                     <label>Counter Value:</label>
                                     <input type="number" step="1" class="form-control" id="targetInput" placeholder="Enter Target Counter">
                                 </div>
-                                <button type="submit" class="btn btn-primary" style="margin-top: 10px; width: 100%;">Update Target Counter</button>
+                                <button type="submit" class="btn btn-primary" style="margin-top: 10px; width: 100%; height: 100px;">Update Target Counter</button>
                             </form>
                         </div>  
                     </div>
@@ -73,26 +76,26 @@
                         <!-- #Button Control -->
                         <div class="row" style="margin-bottom: 10px;">
                             <div class="col-4">
-                                <button class="btn btn-success btn-block" style="width: 100%;" onmousedown="ButtonStart()" onmouseup="ButtonStartReleased()">Start</button>
+                                <button class="btn btn-success btn-block" style="width: 100%; height: 100px;" onmousedown="ButtonStart()" onmouseup="ButtonStartReleased()">Start</button>
                             </div>
                             <div class="col-4">
-                                <button class="btn btn-danger btn-block" style="width: 100%;" onmousedown="ButtonStop()" onmouseup="ButtonStopReleased()">Stop</button>
+                                <button class="btn btn-danger btn-block" style="width: 100%; height: 100px;" onmousedown="ButtonStop()" onmouseup="ButtonStopReleased()">Stop</button>
                             </div>
                             <div class="col-4">
-                                <button class="btn btn-secondary btn-block" style="width: 100%;" onmousedown="ButtonReset()" onmouseup="ButtonResetReleased()">Reset</button>
+                                <button class="btn btn-secondary btn-block" style="width: 100%; height: 100px;" onmousedown="ButtonReset()" onmouseup="ButtonResetReleased()">Reset</button>
                             </div>
                         </div>
                 
                         <!-- #Button Position -->
                         <div class="row" style="margin-bottom: 10px;">
                             <div class="col-4">
-                                <button class="btn btn-primary btn-block" style="width: 100%;" onmousedown="Button30()" onmouseup="Button30Released()">Position 30 Degree</button>
+                                <button class="btn btn-primary btn-block" style="width: 100%; height: 100px;" onmousedown="Button30()" onmouseup="Button30Released()">Position 30 Degree</button>
                             </div>
                             <div class="col-4">
-                                <button class="btn btn-primary btn-block" style="width: 100%;" onmousedown="Button45()" onmouseup="Button45Released()">Position 45 Degree</button>
+                                <button class="btn btn-primary btn-block" style="width: 100%; height: 100px;" onmousedown="Button45()" onmouseup="Button45Released()">Position 45 Degree</button>
                             </div>
                             <div class="col-4">
-                                <button class="btn btn-primary btn-block" style="width: 100%;" onmousedown="Button60()" onmouseup="Button60Released()">Position 60 Degree</button>
+                                <button class="btn btn-primary btn-block" style="width: 100%; height: 100px;" onmousedown="Button60()" onmouseup="Button60Released()">Position 60 Degree</button>
                             </div>
                         </div>   
                     </div>

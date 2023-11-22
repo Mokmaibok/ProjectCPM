@@ -21,7 +21,7 @@ function updateDegree(name) {
     fetch(url)
         .then(response => response.json())
         .then(data => {
-            const element = document.getElementById(name);
+            const element = document.getElementById(name)
             if (element) {
                 element.textContent = data.value;
             }
@@ -30,11 +30,11 @@ function updateDegree(name) {
 }
 
 setInterval(() => {
-    updateDegree("Angle");
-    updateDegree("Counter");
-    updateDegree("Target");
-    updateDegree("PercentSpeed");
-    updateDegree("StatusMode");
+    updateDegree("Angle")
+    updateDegree("Counter")
+    updateDegree("Target")
+    updateDegree("PercentSpeed")
+    StatusMode()
 }, 100);
 
 function sendCommand(name, nubmer) {
@@ -137,25 +137,40 @@ function ButtonAuto () {
     sendCommand("ButtonAuto", "1")
 }
 
+function StatusMode() {
+    const url = apiUrlGet + "ButtonAuto"
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            const element = document.getElementById("StatusMode")
+            if (data.value == 1) {
+                element.textContent = "Auto"
+            } else if (data.value == 0){
+                element.textContent = "Manual"
+            }
+        })
+        .catch(error => console.error('Error:', error))
+}
+
 // คำสั่งสำหรับการรับค่าจาก TargetForm และส่งไปยัง API
 document.getElementById('TargetForm').addEventListener('submit', function(event) {
     event.preventDefault(); // ป้องกันการโหลดหน้าใหม่เมื่อส่งฟอร์ม
     
-    const targetValue = document.getElementById('targetInput').value; // รับค่าจาก input ของ TargetForm
+    const targetValue = document.getElementById('targetInput').value // รับค่าจาก input ของ TargetForm
     
     // ตรวจสอบว่าค่าที่รับมาไม่ใช่ค่าว่าง และเป็นตัวเลข
     if (targetValue !== '' && !isNaN(targetValue)) {
-        const apiUrlTargetSet = apiUrlSet + "Target/" + targetValue; // URL สำหรับการส่งค่าไปยัง API
+        const apiUrlTargetSet = apiUrlSet + "Target/" + targetValue // URL สำหรับการส่งค่าไปยัง API
         
         fetch(apiUrlTargetSet)
             .then(response => response.json())
             .then(data => {
-                console.log('Target updated:', data); // พิมพ์ผลลัพธ์ที่ได้ใน console เมื่อสำเร็จ
+                console.log('Target updated:', data) // พิมพ์ผลลัพธ์ที่ได้ใน console เมื่อสำเร็จ
                 // สามารถเพิ่มการแสดงผลหรือการปรับปรุง UI ต่อจากนี้ได้ตามต้องการ
             })
-            .catch(error => console.error('Error updating Target:', error)); // พิมพ์ข้อผิดพลาดที่เกิดขึ้นในกรณีที่ไม่สามารถส่งค่าไปยัง API ได้
+            .catch(error => console.error('Error updating Target:', error)) // พิมพ์ข้อผิดพลาดที่เกิดขึ้นในกรณีที่ไม่สามารถส่งค่าไปยัง API ได้
     } else {
-        console.error('Invalid input for Target!'); // กรณีที่ค่าที่รับมาไม่ถูกต้อง
+        console.error('Invalid input for Target!') // กรณีที่ค่าที่รับมาไม่ถูกต้อง
     }
 });
 
@@ -164,26 +179,26 @@ document.getElementById('PWMForm').addEventListener('submit', function(event) {
     event.preventDefault(); // ป้องกันการโหลดหน้าใหม่เมื่อส่งฟอร์ม
     
 
-    var pwmValue = document.getElementById('pwmSlider').value;
-    var pwmPercentage = (pwmValue / 255) * 100;
+    var pwmValue = document.getElementById('pwmSlider').value
+    var pwmPercentage = (pwmValue / 255) * 100
 
     // แสดงค่า PWM เป็นเปอร์เซ็นต์
-    document.getElementById('pwmValue').textContent = pwmPercentage.toFixed(2);
+    document.getElementById('pwmValue').textContent = pwmPercentage.toFixed(2)
 
     // บันทึกค่า PWM ลงใน localStorage
-    localStorage.setItem('pwmValue', pwmValue);
+    localStorage.setItem('pwmValue', pwmValue)
     
     // ตรวจสอบว่าค่าที่รับมาไม่ใช่ค่าว่าง และเป็นตัวเลข
     if (pwmValue !== '' && !isNaN(pwmValue)) {
-        const apiUrlPWMSet = apiUrlSet + "PercentSpeed/" + pwmValue; // URL สำหรับการส่งค่าไปยัง API
+        const apiUrlPWMSet = apiUrlSet + "PercentSpeed/" + pwmValue // URL สำหรับการส่งค่าไปยัง API
         
         fetch(apiUrlPWMSet)
             .then(response => response.json())
             .then(data => {
-                console.log('PWM updated:', data); // พิมพ์ผลลัพธ์ที่ได้ใน console เมื่อสำเร็จ
+                console.log('PWM updated:', data) // พิมพ์ผลลัพธ์ที่ได้ใน console เมื่อสำเร็จ
                 // สามารถเพิ่มการแสดงผลหรือการปรับปรุง UI ต่อจากนี้ได้ตามต้องการ
             })
-            .catch(error => console.error('Error updating PWM:', error)); // พิมพ์ข้อผิดพลาดที่เกิดขึ้นในกรณีที่ไม่สามารถส่งค่าไปยัง API ได้
+            .catch(error => console.error('Error updating PWM:', error)) // พิมพ์ข้อผิดพลาดที่เกิดขึ้นในกรณีที่ไม่สามารถส่งค่าไปยัง API ได้
     } else {
         console.error('Invalid input for PWM!'); // กรณีที่ค่าที่รับมาไม่ถูกต้อง
     }
@@ -192,13 +207,13 @@ document.getElementById('PWMForm').addEventListener('submit', function(event) {
 // เมื่อหน้าเว็บโหลดเสร็จแล้ว
 document.addEventListener('DOMContentLoaded', function () {
     // ตรวจสอบว่ามีค่า PWM ที่ถูกบันทึกใน localStorage หรือไม่
-    var storedPwmValue = localStorage.getItem('pwmValue');
+    var storedPwmValue = localStorage.getItem('pwmValue')
     if (storedPwmValue !== null) {
         // แสดงค่า PWM เป็นเปอร์เซ็นต์
-        var pwmPercentage = (storedPwmValue / 255) * 100;
-        document.getElementById('pwmValue').textContent = pwmPercentage.toFixed(2);
+        var pwmPercentage = (storedPwmValue / 255) * 100
+        document.getElementById('pwmValue').textContent = pwmPercentage.toFixed(2)
 
         // อัพเดตค่า Slider ให้ตรงกับค่าที่ถูกบันทึก
-        document.getElementById('pwmSlider').value = storedPwmValue;
+        document.getElementById('pwmSlider').value = storedPwmValue
     }
 });
