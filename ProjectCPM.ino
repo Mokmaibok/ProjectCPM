@@ -33,7 +33,6 @@ float initialAngle = 0.0;
 int counter = 0;
 int target = 3;
 int pwmspeedmotor = 255;
-String statusmode = "Manual";
 
 void setup() {
   Serial.begin(115200);
@@ -53,7 +52,6 @@ void loop() {
   updatePublicAnto();
   
   if (isAutoButtonPressed) {
-    statusmode = "Auto";
     float angle = getAngle() - initialAngle;
   
     if (isButtonfixPosition) {
@@ -106,7 +104,6 @@ void loop() {
 }
 
 void manualMode() {
-  statusmode = "Manual";
   float angle = getAngle() - initialAngle;
 
   if (isButtonfixPosition) {
@@ -243,5 +240,4 @@ void updatePublicAnto() {
   anto.pub("Counter", counter);
   anto.sub("Target", target);
   anto.pub("PercentSpeed", pwmspeedmotor);
-  anto.pub("StatusMode", statusmode);
 }
